@@ -1,68 +1,75 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Panda Chat
 
-## Available Scripts
+## Contexte
 
-In the project directory, you can run:
+Ce projet a pour but de définir une stack efficace pour développer rapidement des applications web modernes et réactive
 
-### `yarn start`
+### Problèmatique initiale
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+1.  Expérimenter Tailwindcss afin de me faire mon propre avis
+2.  Monter en compétence sur la stack firebase (Firestore, Cloud-functions)
+3.  Garantir que les données en provenance de Firestore sont cohérente avec le typing Typescript en utilisant une validation des données au runtime
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+## En pratique
 
-### `yarn test`
+### 1) Tailwindcss
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+En associant Tailwindcss et le plugin `Tailwind CSS IntelliSense`, le dévelopmenent des layouts/composants et rapide malgrès une impression d'avancer dans le flou du fait de la non-connaissance de l'outil.
 
-### `yarn build`
+L'utilisation de `PurgeCSS` permet d'obtenir une feuille de style super optimisé en supprimant tout le CSS inutilisé
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Cependant au bout de quelques heures de dévelopmenent je suis confronté à une dificulté à faire évoluer mes composants en raison du nombre très importants de classes CSS utilisées
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+```jsx
+<input
+  value={password}
+  onChange={(event) => setPassword(event.target.value)}
+  className={classnames(
+    "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline",
+    {
+      "text-gray-700": !submitted || password,
+      "border-red-500": submitted && !password,
+    }
+  )}
+  id="password"
+  type="password"
+  placeholder="******************"
+/>
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Le confort du CSS-in-JS auquel je m'étais récement habitué via l'utilisation des `styled-component` et de `emotion` me manque.
 
-### `yarn eject`
+Je réfléchis à une alternative et envisage de migrer vers `https://rebassjs.org/`
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### 2) Firestore
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Je trouve très agréable d'utiliser Firestore et de pousser au maximum l'utilisation du temps réel via `onSnapshot`.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+Cependant selon l'utilisation, cela provoque un nombre de lectures très important de lecture. Les Quotas peuvent être très rapidement atteint pour ensuite passer à une facturation `$0.039 pour 100 000 documents lus`. Je réfléchis à une optimisation permettant de mutualiser lers lectures entre les composants. D'abord en mettant en place une solution naive de registre de callback. Je réflèchis maintenant à superposer une surcouche d'observabilité en utilisant `Mobx`
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+#### Cloud Function
 
-## Learn More
+L'approche "toute la logique dans le front" atteint rapidement ses limites. En effet je me voyais mal implémenter le système d'invitation à un chat dans l'application cliente.
+Pour répondre à cette problèmatique j'ai utilisé la fonctionnalité serverless de Firebase: les clouds functions en utilisant Typescript et le module `firebase-admin`
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+#### Rules
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Afin de garantir les authorizations d'accès et de lecture au documents. Il faudra implémenter des `Rules`
 
-### Code Splitting
+C'est très vite nécessaire de créer au moins un match par collection
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
+Attention a bien penser implémentation des règles de sécurité dès la conception du modèle de données
 
-### Analyzing the Bundle Size
+Ne pas hésiter à créer des fonction de validation afin de faciliter la comprèhension des règles.
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
+C'est finalement assez fastidieux d'écrire des règles. Principalement du fait de la difficulté à les tester. Les tests d'intègrations basés sur `@firebase/testing` ne sont pas évident à écrire et nécessite le lancement de l'emulateur
 
-### Making a Progressive Web App
+### 3) Intégrité des données
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
+Firestore étant une base de données Document schemaless. Rien ne garanti qu'a un instant T le document lu contient tous les champs du model Typescript attendu par le code de l'application Front.
 
-### Advanced Configuration
+Je cherche donc une solution de validation des données au runtime afin de garantir le bon fonctionnement de l'application au Runtime.
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
+Je commence tout d'abord par mettre en place nue validation des donnèes utilisan la specification https://json-schema.org/specification.html et l'implémentation https://github.com/epoberezkin/ajv. Cela me permet dde couvrir l'ensemble de mes besoins mais çȧ ne me satisfait pas pour autant. En effet la définition des `json-schema` est verbeuse et me prend beaucoup de temps. D'autre par les implémentation Javascript de `json-schema` (ajv) est très lourde (117.1kB minifié). Cela alourdi trop mon bundle.
 
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `yarn build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+Je choisi donc d'utiliser une solution alternative moins puissante mais plus efficace et beaucoup plus legere https://github.com/ianstormtaylor/superstruct
