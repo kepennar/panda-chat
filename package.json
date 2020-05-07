@@ -30,7 +30,9 @@
     "start": "yarn build:style && react-scripts start",
     "build": "NODE_ENV=production yarn build:style && react-scripts build",
     "deploy": "yarn build && firebase deploy",
-    "test": "concurrently 'firebase emulators:start --only firestore' 'wait-on http-get://localhost:8080/ -t 10000 && yarn react-scripts test'",
+    "start:emulator": "GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/service-account-key.json firebase emulators:start",
+    "test": "concurrently 'yarn start:emulator' 'wait-on http-get://localhost:8080/ -t 10000 && yarn react-scripts test'",
+    "test:functions": "concurrently 'npm run start:emulator' 'wait-on http-get://localhost:8080/ -t 10000 && yarn --cwd ./functions test'",
     "eject": "react-scripts eject",
     "analyze": "yarn build && source-map-explorer 'build/static/js/*.js'"
   },
@@ -50,12 +52,14 @@
     ]
   },
   "devDependencies": {
+    "firebase-functions": "^3.6.1",
     "@firebase/testing": "^0.19.2",
     "@fullhuman/postcss-purgecss": "^2.1.2",
     "@types/classnames": "^2.2.10",
     "@types/react-modal": "^3.10.5",
     "@types/react-router-dom": "^5.1.5",
     "concurrently": "^5.2.0",
+    "firebase-admin": "^8.11.0",
     "firebase-tools": "^8.2.0",
     "node-sass": "^4.14.0",
     "prettier": "2.0.5",

@@ -1,10 +1,9 @@
 export class ValidationError extends Error {
   public attribute: string;
   public value?: any;
-
+  public name = "ValidationError";
   constructor(e: any) {
     super("Validation error");
-    this.name = "ValidationError";
     const { path, value, type } = e;
     const key = path[0];
 

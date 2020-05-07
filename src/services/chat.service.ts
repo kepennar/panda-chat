@@ -84,7 +84,7 @@ export async function deleteChatDocument(chatId: string) {
   await db.collection(CHAT_COLLECTION_NAME).doc(chatId).delete();
 }
 
-const inviteToChatFunction = functions.httpsCallable("inviteToChate");
+const inviteToChatFunction = functions.httpsCallable("inviteToChat");
 
 export async function inviteToChat(chatId: string, email: string) {
   const response = await inviteToChatFunction({ chatId, email });
