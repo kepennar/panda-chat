@@ -1,27 +1,23 @@
 import firebase from "firebase/app";
+import { observable, IObservableValue, runInAction } from "mobx";
+import { observeAuthChanged } from "src/observable-firestore/observableFirestore";
 import { db } from "../config/firebase.config";
 import { User, validateUser } from "../model";
-import { createChangesListener } from "./changes.listeners";
 
-export let connectedUser: User | null = null;
+export let connectedUser: IObservableValue<User | null> = observable.box(null);
 
 const auth = firebase.auth();
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 
-export type AuthCallbackChangedType = (user: User | null) => void;
-
-export const authChangesListener = createChangesListener<
-  AuthCallbackChangedType
->();
-
 export function initAuth() {
-  auth.onAuthStateChanged(async (userAuth) => {
-    const user: User | null = userAuth
-      ? await getUserDocument(userAuth.uid)
+  const { item } = observeAuthChanged(auth);
+  item.observe(async (change) => {
+    const firebaseUser = change.newValue;
+    const user: User | null = firebaseUser
+      ? await getUserDocument(firebaseUser.uid)
       : null;
-    connectedUser = user;
-    authChangesListener.CALLBACKS.forEach((callback) => {
-      callback(user);
+    runInAction(() => {
+      connectedUser.set(user);
     });
   });
 }

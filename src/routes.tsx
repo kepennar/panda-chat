@@ -1,16 +1,16 @@
-import React, { FC, useCallback } from "react";
-import { Route, Switch, useHistory, Redirect } from "react-router-dom";
-import { useAuthChangedEffect } from "./hooks/useAuthChangedEffect";
-import { User } from "./model";
+import React, { FC, useEffect } from "react";
+import { Redirect, Route, Switch, useHistory } from "react-router-dom";
 import { LoginPage } from "./pages/auth/Login.page";
 import { RegisterPage } from "./pages/auth/Register.page";
-import { HomePage } from "./pages/home/Home.page";
 import { ChatPage } from "./pages/chat/Chat.page";
+import { HomePage } from "./pages/home/Home.page";
+import { connectedUser } from "./services/auth.service";
 
 export const Routes: FC = () => {
   const history = useHistory();
-  const redirectOnAuthChange = useCallback(
-    (user: User | null) => {
+  useEffect(() => {
+    connectedUser.observe((change) => {
+      const user = change.newValue;
       if (user) {
         if (["/login", "/register"].includes(history.location.pathname)) {
           history.push("/home");
@@ -18,10 +18,8 @@ export const Routes: FC = () => {
       } else {
         history.push("/login");
       }
-    },
-    [history]
-  );
-  useAuthChangedEffect(redirectOnAuthChange);
+    });
+  }, [history]);
 
   return (
     <Switch>

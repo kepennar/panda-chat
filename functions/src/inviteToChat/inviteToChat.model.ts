@@ -1,11 +1,10 @@
+import { object, string } from "yup";
 
-import {object, string} from 'yup'
-
-export interface InviteToChatBody {
+export interface InviteToChatBodyData {
   chatId: string;
   email: string;
 }
-export const inviteToChatBodySchema = object().shape<InviteToChatBody>({
+export const inviteToChatBodySchema = object().shape<InviteToChatBodyData>({
   chatId: string().required(),
-  email: string().email(),
+  email: string().email().required(),
 });

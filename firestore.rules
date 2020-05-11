@@ -6,6 +6,11 @@
         return request.auth != null && request.auth.uid != null;
       }
 
+       function isChatOwner(chatId) {
+        let chat = get(/databases/$(database)/documents/chats/$(chatId)).data;
+        return request.auth.uid == chat.createdBy.uid;
+      }
+
       function isChatMember(chatId) {
         let chat = get(/databases/$(database)/documents/chats/$(chatId)).data;
         return chat.isPrivate == false || (isAuthenticated() && request.auth.uid in chat.memberIds);
@@ -19,6 +24,7 @@
         allow read: if resource.data.isPrivate == false || (isAuthenticated() && request.auth.uid in resource.data.memberIds);
         allow create: if isAuthenticated();
         allow update: if isAuthenticated() && request.auth.uid ==  resource.createdBy.uid;
+        allow delete: if isAuthenticated() && isChatOwner(chatId);
       
         match /messages/{messageId} {
           allow read, create: if isAuthenticated() && isChatMember(chatId);

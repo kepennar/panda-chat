@@ -2,7 +2,7 @@ import * as admin from "firebase-admin";
 import { Request, Response } from "firebase-functions";
 import { ValidationError } from "yup";
 import { validateFirebaseIdToken } from "../auth/AuthValidator";
-import { HttpError } from "../model/HttpError";
+import { HttpError } from "../errors/HttpError";
 import { inviteToChatBodySchema } from "./inviteToChat.model";
 
 export function getInviteToChatHandler(adminApp: admin.app.App) {
@@ -31,9 +31,8 @@ export function getInviteToChatHandler(adminApp: admin.app.App) {
   return async (request: Request, response: Response) => {
     try {
       const decodedToken = await validateFirebaseIdToken(request, adminApp);
-
       const { chatId, email } = await inviteToChatBodySchema.validate(
-        request.body
+        request.body.data
       );
 
       const chat = await getChatById(chatId);

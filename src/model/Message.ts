@@ -27,3 +27,17 @@ export function validateMessage(data: any): data is Message {
 
   return true;
 }
+
+export const MessageConverter: firebase.firestore.FirestoreDataConverter<Message> = {
+  fromFirestore(snapshot, options) {
+    const messageData = { uid: snapshot.id, ...snapshot.data() };
+    if (validateMessage(messageData)) {
+      return messageData;
+    } else {
+      throw new Error("Invalidate message data");
+    }
+  },
+  toFirestore(message) {
+    return message;
+  },
+};

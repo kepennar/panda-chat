@@ -1,6 +1,6 @@
 import * as firebaseAdmin from "firebase-admin";
 import { Request } from "firebase-functions";
-import { HttpError } from "../model/HttpError";
+import { HttpError } from "../errors/HttpError";
 
 export async function validateFirebaseIdToken(
   req: Request,

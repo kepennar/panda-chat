@@ -25,6 +25,8 @@ interface ModalProps {
   isOpen: boolean;
   onClose?: () => void;
 }
+ReactModal.setAppElement("#root");
+
 export const Modal: FC<ModalProps> = ({ isOpen, onClose, children }) => {
   const [modalIsOpen, setModalIsOpen] = useState(isOpen);
 

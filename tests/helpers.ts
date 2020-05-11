@@ -65,7 +65,7 @@ export function buildTestRequest(
 ): any {
   return {
     headers,
-    body,
+    body: { data: { ...body } },
   };
 }
 

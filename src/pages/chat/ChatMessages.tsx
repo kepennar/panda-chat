@@ -1,34 +1,25 @@
-import React, { FC, useContext, useState, useEffect } from "react";
+import { observer } from "mobx-react-lite";
+import React, { FC } from "react";
 import { ChatMessage } from "../../components/ChatMessage";
-import { UserContext } from "../../contexts/user.context";
-import { useMessagesChangedEffect } from "../../hooks/useMessagesChangedEffect";
-import { Message } from "../../model";
-import { listChatMessages } from "../../services/message.service";
+import { Message, User } from "../../model";
 
 interface ChatMessagesProps {
-  chatId: string;
+  user: User | null;
+  messages: Message[];
 }
 
-export const ChatMessages: FC<ChatMessagesProps> = ({ chatId }) => {
-  const { user } = useContext(UserContext);
-
-  const [messages, setMessages] = useState<Message[]>([]);
-  useMessagesChangedEffect(setMessages);
-
-  useEffect(() => {
-    const unsubscribe = listChatMessages(chatId);
-    return unsubscribe;
-  }, [chatId]);
-
-  return (
-    <div className="flex flex-col items-center h-full">
-      {messages.map((message, index) => (
-        <ChatMessage
-          key={index}
-          message={message}
-          fromCurrentUser={message.createdBy.uid === user?.uid}
-        />
-      ))}
-    </div>
-  );
-};
+export const ChatMessages: FC<ChatMessagesProps> = observer(
+  ({ user, messages }) => {
+    return (
+      <div className="flex flex-col items-center h-full">
+        {messages.map((message, index) => (
+          <ChatMessage
+            key={index}
+            message={message}
+            fromCurrentUser={message.createdBy.uid === user?.uid}
+          />
+        ))}
+      </div>
+    );
+  }
+);

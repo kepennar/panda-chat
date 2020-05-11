@@ -1,12 +1,16 @@
-import React, { FC, useContext } from "react";
+import { observer } from "mobx-react-lite";
+import React, { FC } from "react";
 import { Link } from "react-router-dom";
-import { UserContext } from "../../contexts/user.context";
+import { User } from "src/model";
 import { logout } from "../../services/auth.service";
 import { Avatar } from "../Avatar";
+import { IObservableValue } from "mobx";
 
-export const Navbar: FC = () => {
-  const { user } = useContext(UserContext);
-
+interface NavbarProps {
+  userBox: IObservableValue<User | null>;
+}
+export const Navbar: FC<NavbarProps> = observer(({ userBox }) => {
+  const user = userBox.get();
   return (
     <nav className="bg-black p-2 flex items-center justify-between flex-wrap w-auto h-18 fixed top-0 w-full">
       <div className="flex items-center flex-shrink-0 text-white mr-6">
@@ -38,4 +42,4 @@ export const Navbar: FC = () => {
       </div>
     </nav>
   );
-};
+});

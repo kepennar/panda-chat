@@ -30,3 +30,18 @@ export function validateChat(data: any): data is Chat {
   }
   return true;
 }
+
+export const ChatConverter: firebase.firestore.FirestoreDataConverter<Chat> = {
+  fromFirestore(snapshot, options) {
+    const chatData = { uid: snapshot.id, ...snapshot.data() };
+
+    if (validateChat(chatData)) {
+      return chatData;
+    } else {
+      throw new Error("Invalidate chat data");
+    }
+  },
+  toFirestore(chat) {
+    return chat;
+  },
+};

@@ -1,12 +1,19 @@
+import "mobx-react-lite/batchingForReactDom";
 import React from "react";
 import ReactDOM from "react-dom";
-import "./config/firebase.config";
-
+import { configure } from "mobx";
 import App from "./App";
+import "./config/firebase.config";
+import { initDb } from "./config/firebase.config";
 import * as serviceWorker from "./serviceWorker";
+import { initAuth } from "./services/auth.service";
 
-function run() {
-  ReactDOM.render(
+configure({ enforceActions: "always" });
+initAuth();
+
+async function run() {
+  await initDb();
+  return ReactDOM.render(
     <React.StrictMode>
       <App />
     </React.StrictMode>,

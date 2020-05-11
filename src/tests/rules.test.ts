@@ -142,5 +142,23 @@ describe("Firestore rules", () => {
         .get();
       await expect(bobReadAliceMessageChat).rejects.toBeDefined();
     });
+
+    it("should be able to remove a private chat if he is owner", async () => {
+      const aliceApp = authApp(projectId, alice);
+      const aliceChatData = buildChatData("test", true, alice);
+      const chatRes = aliceApp
+        .firestore()
+        .collection("chats")
+        .doc(aliceChatData.uid)
+        .set(aliceChatData);
+      await expect(chatRes).resolves.toBeUndefined();
+
+      const deletionRes = aliceApp
+        .firestore()
+        .collection(`chats`)
+        .doc(aliceChatData.uid)
+        .delete();
+      await expect(deletionRes).resolves.toBeUndefined();
+    });
   });
 });

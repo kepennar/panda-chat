@@ -1,7 +1,13 @@
-import React, { FC, useEffect, useState } from "react";
+import React, { FC } from "react";
 import { useParams } from "react-router-dom";
-import { Chat } from "../../model";
-import { getChatById } from "../../services/chat.service";
+import {
+  useObservableFirestoreQuery,
+  useObservableFirestoreReference,
+} from "src/observable-firestore";
+import { connectedUser } from "src/services/auth.service";
+import { getChatMessageQuery } from "src/services/message.service";
+import { ChatConverter, MessageConverter } from "../../model";
+import { getChatByIdRef } from "../../services/chat.service";
 import { ChatInfo } from "./ChatInfo";
 import { ChatMessages } from "./ChatMessages";
 import { ChatMessagesWriter } from "./ChatMessageWriter";
@@ -9,22 +15,25 @@ import { ChatMessagesWriter } from "./ChatMessageWriter";
 export const ChatPage: FC = () => {
   let { chatId } = useParams<{ chatId: string }>();
 
-  const [chat, setChat] = useState<Chat>();
+  const messages = useObservableFirestoreQuery(
+    getChatMessageQuery(chatId),
+    MessageConverter,
+    [chatId]
+  );
 
-  useEffect(() => {
-    getChatById(chatId).then((chat) => {
-      setChat(chat);
-    });
-  }, [chatId]);
+  const chat = useObservableFirestoreReference(
+    getChatByIdRef(chatId),
+    ChatConverter,
+    [chatId]
+  );
 
-  if (!chat) {
-    return <div>LOADING</div>;
-  }
   return (
     <div>
       <ChatInfo chat={chat} />
       <div className="mb-12 flex flex-grow flex-col overflow-y-auto">
-        <ChatMessages chatId={chatId} />
+        {messages && (
+          <ChatMessages user={connectedUser.get()} messages={messages} />
+        )}
       </div>
       <div className="fixed bottom-0 w-full flex justify-center bg-white border-t-2 p-1">
         <ChatMessagesWriter chatId={chatId} />
